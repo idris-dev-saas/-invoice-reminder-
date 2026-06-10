@@ -19,7 +19,7 @@ async function getOwnedInvoice(id: string, userId: string) {
 
 export async function PATCH(
   req: Request,
-  ctx: RouteContext<'/api/invoices/[id]'>
+  ctx: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -45,7 +45,7 @@ export async function PATCH(
 
 export async function DELETE(
   _: Request,
-  ctx: RouteContext<'/api/invoices/[id]'>
+  ctx: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
