@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  name      String?
+  createdAt DateTime  @default(now())
+  invoices  Invoice[]
+}
+
+enum InvoiceStatus {
+  UNPAID
+  OVERDUE
+  PAID
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  userId      String
+  clientName  String
+  clientEmail String
+  amount      Float
+  currency    String        @default("EUR")
+  dueDate     DateTime
+  status      InvoiceStatus @default(UNPAID)
+  createdAt   DateTime      @default(now())
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminders   ReminderLog[]
+}
+
+model ReminderLog {
+  id           String   @id @default(cuid())
+  invoiceId    String
+  reminderType String
+  sentAt       DateTime @default(now())
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([invoiceId, reminderType])
+}
