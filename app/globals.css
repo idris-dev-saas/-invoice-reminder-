@@ -1557,6 +1557,12 @@ input, select, textarea { font-family: inherit; }
   color: var(--text-3);
   padding: var(--space-2) 0;
 }
+.pricing-downgrade-note {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-3);
+  padding: var(--space-2) 0;
+}
 
 /* ─── Date field with calendar button ───────────────────── */
 .date-field {

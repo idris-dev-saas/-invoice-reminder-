@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { PLAN_CONFIG, type PlanFeature } from '@/lib/plan'
-import { BillingActions, PortalButton, UpgradeButton } from '@/components/BillingActions'
+import { BillingActions, UpgradeButton } from '@/components/BillingActions'
 import { Plan } from '@prisma/client'
 
 export default async function BillingPage({
@@ -172,10 +172,9 @@ function PricingCard({
       ) : upgradeAction ? (
         <UpgradeButton plan="BUSINESS" label={upgradeAction.label} />
       ) : portalAction ? (
-        <PortalButton
-          label={portalAction.label}
-          className={`btn btn-full${portalAction.primary ? ' btn-primary' : ' btn-secondary'}`}
-        />
+        <div className="pricing-downgrade-note">
+          Pour rétrograder, contactez le support.
+        </div>
       ) : null}
     </div>
   )
