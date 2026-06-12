@@ -33,7 +33,11 @@ async function handleSubscriptionUpsert(sub: Stripe.Subscription) {
 
   const priceId = sub.items.data[0]?.price.id ?? ''
   const plan    = planFromPrice(priceId)
-  const status  = stripeStatusToDb(sub.status)
+  // If cancel_at_period_end, mark as CANCELED so UI can show "will cancel"
+  // but keep the plan active until customer.subscription.deleted fires
+  const status  = sub.cancel_at_period_end
+    ? SubscriptionStatus.CANCELED
+    : stripeStatusToDb(sub.status)
 
   const exists = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
   if (!exists) {

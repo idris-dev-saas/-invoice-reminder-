@@ -71,7 +71,7 @@ export default async function BillingPage({
                   {user.subscriptionStatus === 'ACTIVE'   ? 'Actif'
                   : user.subscriptionStatus === 'PAST_DUE' ? 'Paiement en retard'
                   : user.subscriptionStatus === 'TRIALING' ? 'Essai'
-                  : 'Annulé'}
+                  : 'Annulation en cours'}
                 </span>
               )}
               <p className="billing-usage">
