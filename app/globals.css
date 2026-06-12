@@ -2926,7 +2926,7 @@ input, select, textarea { font-family: inherit; }
   .lp-showcase-img-wrap { order: -1; }
   .lp-features { grid-template-columns: 1fr; }
   .lp-pricing  { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
-  .lp-steps { flex-direction: column; align-items: center; }
+  .lp-steps { flex-direction: column; align-items: center; gap: var(--space-10); }
   .lp-step-connector { display: none; }
   .lp-trust-inner { flex-wrap: wrap; height: auto; padding: var(--space-3) var(--space-4); gap: var(--space-3); }
   .lp-trust-sep { display: none; }
