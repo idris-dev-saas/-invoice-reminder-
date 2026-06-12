@@ -31,11 +31,11 @@ export function PortalButton({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div className="btn-action-wrap">
       <button className={className} onClick={openPortal} disabled={loading}>
         {loading ? 'Chargement...' : label}
       </button>
-      {err && <p style={{ fontSize: '12px', color: 'var(--danger)', margin: 0 }}>{err}</p>}
+      {err && <p className="btn-inline-error">{err}</p>}
     </div>
   )
 }
@@ -67,75 +67,38 @@ function UpgradeModal({ result, onClose }: { result: UpgradeResult; onClose: () 
     : 'Aucun prélèvement immédiat.'
 
   return createPortal(
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 1000,
-      background: 'oklch(0% 0 0 / 0.45)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '16px',
-    }}>
-      <div style={{
-        background: 'var(--surface, #fff)',
-        borderRadius: '16px',
-        padding: '32px',
-        maxWidth: '420px',
-        width: '100%',
-        position: 'relative',
-        boxShadow: '0 20px 60px oklch(0% 0 0 / 0.18)',
-      }}>
-        <button
-          onClick={onClose}
-          aria-label="Fermer"
-          style={{
-            position: 'absolute', top: '16px', right: '16px',
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--text-muted, #888)', fontSize: '20px', lineHeight: 1,
-            padding: '4px',
-          }}
-        >✕</button>
+    <div className="upgrade-modal-backdrop">
+      <div className="upgrade-modal-panel">
+        <button className="upgrade-modal-close" onClick={onClose} aria-label="Fermer">✕</button>
 
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div style={{
-            width: '48px', height: '48px', borderRadius: '50%',
-            background: 'oklch(95% 0.05 145)', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 16px',
-          }}>
+        <div className="upgrade-modal-header">
+          <div className="upgrade-modal-icon">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
               <path d="M4 11.5l5 5 9-9" stroke="oklch(45% 0.15 145)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <h2 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 700, color: 'var(--text, #111)' }}>
-            Plan mis à jour !
-          </h2>
-          <p style={{ margin: 0, color: 'var(--text-muted, #666)', fontSize: '14px' }}>
+          <h2 className="upgrade-modal-title">Plan mis à jour</h2>
+          <p className="upgrade-modal-sub">
             Votre abonnement est maintenant <strong>{result.newPlan}</strong>.
           </p>
         </div>
 
-        <div style={{
-          background: 'var(--surface-subtle, #f8f9fa)',
-          borderRadius: '10px',
-          padding: '16px',
-          marginBottom: '24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-            <span style={{ color: 'var(--text-muted, #666)' }}>Prélevé maintenant</span>
-            <span style={{ fontWeight: 600, color: 'var(--text, #111)' }}>
+        <div className="upgrade-modal-details">
+          <div className="upgrade-modal-row">
+            <span className="upgrade-modal-label">Prélevé maintenant</span>
+            <span className="upgrade-modal-value">
               {result.amountChargedNow > 0 ? `${result.amountChargedNow.toFixed(2)} €` : '0 €'}
             </span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-            <span style={{ color: 'var(--text-muted, #666)' }}>Prochaine facture</span>
-            <span style={{ fontWeight: 600, color: 'var(--text, #111)' }}>{result.nextBillingAmount} €/mois</span>
+          <div className="upgrade-modal-row">
+            <span className="upgrade-modal-label">Prochaine facture</span>
+            <span className="upgrade-modal-value">{result.nextBillingAmount} €/mois</span>
           </div>
-          <p style={{ margin: '4px 0 0', fontSize: '11px', color: 'var(--text-muted, #888)' }}>{charged}</p>
+          <p className="upgrade-modal-note">{charged}</p>
         </div>
 
         <button className="btn btn-primary btn-full" onClick={onClose}>
-          OK
+          Continuer
         </button>
       </div>
     </div>,
@@ -186,11 +149,11 @@ export function UpgradeButton({
   return (
     <>
       {result && <UpgradeModal result={result} onClose={handleClose} />}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="btn-action-wrap">
         <button className={className} onClick={upgrade} disabled={loading}>
           {loading ? 'Mise à niveau...' : label}
         </button>
-        {err && <p style={{ fontSize: '12px', color: 'var(--danger)', margin: 0 }}>{err}</p>}
+        {err && <p className="btn-inline-error">{err}</p>}
       </div>
     </>
   )

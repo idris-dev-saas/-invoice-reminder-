@@ -69,7 +69,6 @@ export default function LoginPage() {
             type="submit"
             disabled={loading}
             className="btn btn-primary btn-full btn-lg"
-            style={{ marginTop: 4 }}
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>

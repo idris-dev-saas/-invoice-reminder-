@@ -98,7 +98,6 @@ export default function RegisterPage() {
             type="submit"
             disabled={loading}
             className="btn btn-primary btn-full btn-lg"
-            style={{ marginTop: 4 }}
           >
             {loading ? 'Création...' : 'Créer mon compte'}
           </button>
