@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 export function PortalButton({
   label = "Gérer l'abonnement",
@@ -58,11 +59,14 @@ type UpgradeResult = {
 }
 
 function UpgradeModal({ result, onClose }: { result: UpgradeResult; onClose: () => void }) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+  if (!mounted) return null
   const charged = result.amountChargedNow > 0
     ? `${result.amountChargedNow.toFixed(2)} € ont été prélevés immédiatement (prorata).`
     : 'Aucun prélèvement immédiat.'
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
       background: 'oklch(0% 0 0 / 0.45)',
@@ -134,7 +138,8 @@ function UpgradeModal({ result, onClose }: { result: UpgradeResult; onClose: () 
           OK
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
