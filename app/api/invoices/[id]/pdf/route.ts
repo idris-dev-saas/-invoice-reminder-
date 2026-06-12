@@ -38,7 +38,7 @@ export async function GET(
 
   const formattedAmount = new Intl.NumberFormat('fr-FR', {
     style: 'currency', currency: invoice.currency,
-  }).format(invoice.amount)
+  }).format(invoice.amount).replace(/ /g, ' ').replace(/ /g, ' ')
 
   const formattedDue     = new Date(invoice.dueDate).toLocaleDateString('fr-FR')
   const formattedCreated = new Date(invoice.createdAt).toLocaleDateString('fr-FR')
