@@ -48,6 +48,50 @@ interface Props {
   minimal?:      boolean
 }
 
+export function UpgradeButton({
+  plan,
+  label,
+  className = 'btn btn-primary btn-full',
+}: {
+  plan:       'PRO' | 'BUSINESS'
+  label:      string
+  className?: string
+}) {
+  const [loading, setLoading] = useState(false)
+  const [err,     setErr]     = useState('')
+
+  async function upgrade() {
+    setLoading(true)
+    setErr('')
+    try {
+      const res  = await fetch('/api/stripe/upgrade', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ plan }),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        window.location.href = '/dashboard/billing?success=1'
+      } else {
+        setErr(data.error ?? 'Erreur lors de la mise à niveau.')
+        setLoading(false)
+      }
+    } catch {
+      setErr('Erreur réseau.')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <button className={className} onClick={upgrade} disabled={loading}>
+        {loading ? 'Chargement...' : label}
+      </button>
+      {err && <p style={{ fontSize: '12px', color: 'var(--danger)', margin: 0 }}>{err}</p>}
+    </div>
+  )
+}
+
 export function BillingActions({
   isPaid, hasCustomer, checkoutPlan, checkoutLabel, minimal,
 }: Props) {

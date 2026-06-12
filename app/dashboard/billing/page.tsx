@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { PLAN_CONFIG, type PlanFeature } from '@/lib/plan'
-import { BillingActions, PortalButton } from '@/components/BillingActions'
+import { BillingActions, PortalButton, UpgradeButton } from '@/components/BillingActions'
 import { Plan } from '@prisma/client'
 
 export default async function BillingPage({
@@ -108,8 +108,11 @@ export default async function BillingPage({
                   portalAction={
                     p === Plan.PRO && user.plan === Plan.BUSINESS
                       ? { label: 'Rétrograder au Pro' }
-                      : p === Plan.BUSINESS && user.plan === Plan.PRO
-                      ? { label: 'Passer au Business', primary: true }
+                      : undefined
+                  }
+                  upgradeAction={
+                    p === Plan.BUSINESS && user.plan === Plan.PRO
+                      ? { label: 'Passer au Business' }
                       : undefined
                   }
                 />
@@ -123,16 +126,17 @@ export default async function BillingPage({
 }
 
 function PricingCard({
-  name, price, tagline, features, plan, highlight = false, current = false, portalAction,
+  name, price, tagline, features, plan, highlight = false, current = false, portalAction, upgradeAction,
 }: {
-  name:          string
-  price:         string
-  tagline:       string
-  features:      PlanFeature[]
-  plan:          'PRO' | 'BUSINESS' | null
-  highlight?:    boolean
-  current?:      boolean
-  portalAction?: { label: string; primary?: boolean }
+  name:           string
+  price:          string
+  tagline:        string
+  features:       PlanFeature[]
+  plan:           'PRO' | 'BUSINESS' | null
+  highlight?:     boolean
+  current?:       boolean
+  portalAction?:  { label: string; primary?: boolean }
+  upgradeAction?: { label: string }
 }) {
   const classes = [
     'pricing-card',
@@ -165,6 +169,8 @@ function PricingCard({
           <input type="hidden" name="plan" value={plan} />
           <BillingCheckoutButton plan={plan} label={`Passer au ${name}`} />
         </form>
+      ) : upgradeAction ? (
+        <UpgradeButton plan="BUSINESS" label={upgradeAction.label} />
       ) : portalAction ? (
         <PortalButton
           label={portalAction.label}
