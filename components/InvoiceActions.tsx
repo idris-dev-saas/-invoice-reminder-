@@ -1,11 +1,9 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { InvoiceStatus } from '@prisma/client'
-
 type Props = {
   invoiceId:      string
-  status:         InvoiceStatus
+  status:         string
   canPdf:         boolean
   isLoading:      boolean
   onMarkPaid:     () => void
@@ -62,7 +60,7 @@ export function InvoiceActions({
       }}
       role="menu"
     >
-      {status !== InvoiceStatus.PAID && (
+      {status !== 'PAID' && (
         <button
           className="action-item"
           role="menuitem"
@@ -88,7 +86,7 @@ export function InvoiceActions({
         </a>
       )}
 
-      {(status !== InvoiceStatus.PAID || canPdf) && (
+      {(status !== 'PAID' || canPdf) && (
         <div className="action-separator" />
       )}
 

@@ -1,9 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { Plan } from '@prisma/client'
 
-export function PlanBanner({ plan, invoiceCount }: { plan: Plan; invoiceCount: number }) {
-  if (plan !== Plan.FREE) return null
+export function PlanBanner({ plan, invoiceCount }: { plan: string; invoiceCount: number }) {
+  if (plan !== 'FREE') return null
 
   const remaining = 5 - invoiceCount
   const atLimit   = remaining <= 0

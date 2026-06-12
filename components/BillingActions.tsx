@@ -1,5 +1,4 @@
 'use client'
-import { Plan } from '@prisma/client'
 import { useState } from 'react'
 
 export function PortalButton({
@@ -43,7 +42,7 @@ export function PortalButton({
 interface Props {
   isPaid:        boolean
   hasCustomer:   boolean
-  currentPlan:   Plan
+  currentPlan:   string
   checkoutPlan?: 'PRO' | 'BUSINESS'
   checkoutLabel?: string
   minimal?:      boolean

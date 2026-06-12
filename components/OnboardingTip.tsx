@@ -1,8 +1,7 @@
 import Link from 'next/link'
-import { Plan } from '@prisma/client'
 
-export function OnboardingTip({ plan, invoiceCount }: { plan: Plan; invoiceCount: number }) {
-  if (plan !== Plan.FREE) return null
+export function OnboardingTip({ plan, invoiceCount }: { plan: string; invoiceCount: number }) {
+  if (plan !== 'FREE') return null
   if (invoiceCount === 0 || invoiceCount > 5) return null
 
   return (

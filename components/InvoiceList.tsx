@@ -1,5 +1,4 @@
 'use client'
-import { Invoice, InvoiceStatus, Plan, ReminderLog } from '@prisma/client'
 import { useState } from 'react'
 import { StatusBadge }    from './StatusBadge'
 import { InvoiceForm }    from './InvoiceForm'
@@ -9,18 +8,30 @@ import { InvoiceActions } from './InvoiceActions'
 import { useToast }       from './Toast'
 import { useRouter }      from 'next/navigation'
 
-type InvoiceWithReminders = Invoice & { reminders: ReminderLog[] }
+type ReminderLog = { id: string; sentAt: Date | string; reminderType: string }
+type InvoiceWithReminders = {
+  id:            string
+  invoiceNumber: number | null
+  clientName:    string
+  clientEmail:   string
+  amount:        number
+  currency:      string
+  dueDate:       Date | string
+  status:        string
+  paidAt:        Date | string | null
+  reminders:     ReminderLog[]
+}
 type Props = {
   invoices: InvoiceWithReminders[]
   canPdf?:  boolean
-  plan?:    Plan
+  plan?:    string
 }
 
 function formatAmount(amount: number, currency: string) {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(amount)
 }
 
-function formatDate(date: Date) {
+function formatDate(date: Date | string) {
   return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
@@ -47,7 +58,7 @@ export function InvoiceList({ invoices, canPdf = false, plan }: Props) {
       const res = await fetch(`/api/invoices/${id}`, {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ status: InvoiceStatus.PAID }),
+        body:    JSON.stringify({ status: 'PAID' }),
       })
       if (!res.ok) throw new Error()
       toast.success('Facture marquée payée')
