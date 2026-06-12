@@ -17,10 +17,17 @@ export async function POST() {
     return NextResponse.json({ error: 'No active subscription' }, { status: 400 })
   }
 
-  const portalSession = await stripe.billingPortal.sessions.create({
-    customer:   user.stripeCustomerId,
-    return_url: `${process.env.NEXTAUTH_URL}/dashboard/billing`,
-  })
+  let portalSession
+  try {
+    portalSession = await stripe.billingPortal.sessions.create({
+      customer:   user.stripeCustomerId,
+      return_url: `${process.env.NEXTAUTH_URL}/dashboard/billing`,
+    })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[portal] Stripe error:', msg)
+    return NextResponse.json({ error: `Erreur Stripe : ${msg}` }, { status: 500 })
+  }
 
   return NextResponse.json({ url: portalSession.url })
 }
