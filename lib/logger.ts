@@ -16,6 +16,8 @@ export type LogEvent =
   | 'cron_started'
   | 'cron_completed'
   | 'cron_error'
+  | 'plan_upgraded'
+  | 'upgrade_failed'
 
 interface Payload {
   event:      LogEvent

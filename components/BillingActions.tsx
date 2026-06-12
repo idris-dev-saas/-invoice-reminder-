@@ -48,6 +48,15 @@ interface Props {
   minimal?:      boolean
 }
 
+type UpgradeResult = {
+  status:            'success'
+  oldPlan:           string
+  newPlan:           string
+  prorationApplied:  boolean
+  amountChargedNow:  number
+  nextBillingAmount: number
+}
+
 export function UpgradeButton({
   plan,
   label,
@@ -59,10 +68,12 @@ export function UpgradeButton({
 }) {
   const [loading, setLoading] = useState(false)
   const [err,     setErr]     = useState('')
+  const [result,  setResult]  = useState<UpgradeResult | null>(null)
 
   async function upgrade() {
     setLoading(true)
     setErr('')
+    setResult(null)
     try {
       const res  = await fetch('/api/stripe/upgrade', {
         method:  'POST',
@@ -70,8 +81,10 @@ export function UpgradeButton({
         body:    JSON.stringify({ plan }),
       })
       const data = await res.json()
-      if (data.ok) {
-        window.location.href = '/dashboard/billing?success=1'
+      if (data.status === 'success') {
+        setResult(data)
+        // Give user time to read the confirmation, then refresh
+        setTimeout(() => { window.location.href = '/dashboard/billing?success=1' }, 3000)
       } else {
         setErr(data.error ?? 'Erreur lors de la mise à niveau.')
         setLoading(false)
@@ -82,10 +95,27 @@ export function UpgradeButton({
     }
   }
 
+  if (result) {
+    const charged = result.amountChargedNow > 0
+      ? `${result.amountChargedNow.toFixed(2)} € prélevés maintenant (prorata).`
+      : 'Aucun prélèvement immédiat.'
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <p style={{ fontSize: '13px', color: 'var(--success, #16a34a)', margin: 0, fontWeight: 600 }}>
+          Plan mis à jour vers {result.newPlan}
+        </p>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>{charged}</p>
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+          Prochaine facture : {result.nextBillingAmount} €/mois
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       <button className={className} onClick={upgrade} disabled={loading}>
-        {loading ? 'Chargement...' : label}
+        {loading ? 'Mise à niveau...' : label}
       </button>
       {err && <p style={{ fontSize: '12px', color: 'var(--danger)', margin: 0 }}>{err}</p>}
     </div>
