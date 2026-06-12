@@ -1,5 +1,6 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 
 interface Props {
@@ -13,7 +14,10 @@ export function InvoiceForm({ onClose, onPlanError }: Props) {
   const [error,     setError]     = useState('')
   const [dateText,  setDateText]  = useState('')
   const [dateIso,   setDateIso]   = useState('')
+  const [mounted,   setMounted]   = useState(false)
   const pickerRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => { setMounted(true) }, [])
 
   function handleDateText(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value
@@ -101,7 +105,9 @@ export function InvoiceForm({ onClose, onPlanError }: Props) {
     }
   }
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal-panel">
         <h2 className="modal-title">Nouvelle facture</h2>
@@ -203,6 +209,7 @@ export function InvoiceForm({ onClose, onPlanError }: Props) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
