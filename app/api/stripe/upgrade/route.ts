@@ -90,6 +90,17 @@ export async function POST(req: Request) {
       proration_behavior: 'create_prorations',
       metadata:           { userId: session.user.id, plan },
     })
+
+    // Immediately invoice and pay the proration — otherwise it waits until next cycle
+    if (amountChargedNow > 0) {
+      const invoice = await stripe.invoices.create({
+        customer:                        subscription.customer as string,
+        subscription:                    user.stripeSubscriptionId,
+        pending_invoice_items_behavior:  'include',
+      })
+      await stripe.invoices.finalizeInvoice(invoice.id)
+      await stripe.invoices.pay(invoice.id)
+    }
   } catch (err) {
     const stripeErr = err as { code?: string; type?: string; message: string }
     logger.error({ event: 'upgrade_failed', userId: session.user.id, error: stripeErr.message })
