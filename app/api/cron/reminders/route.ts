@@ -1,12 +1,24 @@
 import { NextResponse } from 'next/server'
-import { processReminders } from '@/lib/reminder'
+import { runCron } from '@/lib/invoices/cronRunner'
 
-export async function POST(req: Request) {
-  const secret = req.headers.get('authorization')
-  if (secret !== `Bearer ${process.env.CRON_SECRET}`) {
+function isAuthorized(req: Request): boolean {
+  return req.headers.get('authorization') === `Bearer ${process.env.CRON_SECRET}`
+}
+
+// Vercel Cron Jobs call GET
+export async function GET(req: Request) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const result = await runCron()
+  return NextResponse.json(result)
+}
 
-  const result = await processReminders()
-  return NextResponse.json({ ok: true, ...result })
+// Manual trigger for local testing
+export async function POST(req: Request) {
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const result = await runCron()
+  return NextResponse.json(result)
 }

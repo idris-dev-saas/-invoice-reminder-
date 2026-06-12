@@ -7,8 +7,11 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    seed: "npx tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"]!,
+    // Prod (Supabase): set DIRECT_URL to the direct connection string (not the pooled one).
+    // Dev (Docker):    leave DIRECT_URL unset — falls back to DATABASE_URL.
+    url: (process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"])!,
   },
 });

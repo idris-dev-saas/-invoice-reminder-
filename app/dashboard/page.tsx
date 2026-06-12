@@ -4,38 +4,54 @@ import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import { InvoiceList } from '@/components/InvoiceList'
 import { SignOutButton } from '@/components/SignOutButton'
+import { PlanBanner } from '@/components/PlanBanner'
+import { AnalyticsStrip } from '@/components/AnalyticsStrip'
+import { canExportPdf } from '@/lib/plan'
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 
-  const invoices = await prisma.invoice.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: 'desc' },
-  })
-
-  const overdueCount = invoices.filter((i) => i.status === 'OVERDUE').length
+  const [invoices, user] = await Promise.all([
+    prisma.invoice.findMany({
+      where:   { userId: session.user.id },
+      orderBy: { invoiceNumber: { sort: 'asc', nulls: 'last' } },
+      include: { reminders: { orderBy: { sentAt: 'asc' } } },
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { plan: true, _count: { select: { invoices: true } } },
+    }),
+  ])
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 px-4 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <h1 className="text-lg font-bold text-slate-900">Invoice Reminder</h1>
+    <>
+      <header className="app-header">
+        <div className="content-wrap">
+          <div className="app-logo">
+            <span className="app-logo-dot" />
+            Invoice Reminder
+          </div>
+          <nav className="header-nav">
+            <a href="/dashboard" className="header-link is-active">Factures</a>
+            <a href="/dashboard/billing" className="header-link">Abonnement</a>
+          </nav>
           <SignOutButton />
         </div>
       </header>
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">Mes factures</h2>
-          {overdueCount > 0 && (
-            <p className="text-red-600 text-sm mt-1">
-              {overdueCount} facture{overdueCount > 1 ? 's' : ''} en retard
-            </p>
-          )}
+      {user && (
+        <PlanBanner plan={user.plan} invoiceCount={user._count.invoices} />
+      )}
+      <main className="dashboard-main">
+        <div className="content-wrap">
+          <AnalyticsStrip invoices={invoices} />
+          <InvoiceList
+            invoices={invoices}
+            canPdf={user ? canExportPdf(user.plan) : false}
+            plan={user?.plan}
+          />
         </div>
-        <InvoiceList invoices={invoices} />
-      </div>
-    </main>
+      </main>
+    </>
   )
 }
-

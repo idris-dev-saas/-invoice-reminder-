@@ -1,82 +1,111 @@
 'use client'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const [error, setError] = useState('')
+  const router  = useRouter()
+  const [error,   setError]   = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const form = e.currentTarget
+
+    const form     = e.currentTarget
+    const email    = (form.elements.namedItem('email')    as HTMLInputElement).value
+    const password = (form.elements.namedItem('password') as HTMLInputElement).value
+    const name     = (form.elements.namedItem('name')     as HTMLInputElement).value
+
     const res = await fetch('/api/auth/register', {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: (form.elements.namedItem('name') as HTMLInputElement).value,
-        email: (form.elements.namedItem('email') as HTMLInputElement).value,
-        password: (form.elements.namedItem('password') as HTMLInputElement).value,
-      }),
+      body:    JSON.stringify({ name, email, password }),
     })
-    setLoading(false)
+
     if (!res.ok) {
       const data = await res.json()
       setError(data.error || "Erreur lors de l'inscription")
-    } else {
+      setLoading(false)
+      return
+    }
+
+    // Auto-login after registration — no friction
+    const result = await signIn('credentials', { email, password, redirect: false })
+    setLoading(false)
+
+    if (result?.error) {
+      // Inscription réussie mais login auto échoué — rediriger vers login
       router.push('/login')
+    } else {
+      router.push('/dashboard')
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">Créer un compte</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Nom</label>
+    <main className="auth-page">
+      <div className="auth-lockup">
+        <div className="auth-logo">
+          <span className="app-logo-dot" />
+          Invoice Reminder
+        </div>
+        <p className="auth-tagline">Gérez vos relances sans effort</p>
+      </div>
+
+      <div className="auth-card">
+        <h1 className="auth-heading">Créer un compte</h1>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label className="form-label" htmlFor="name">Nom</label>
             <input
+              id="name"
               name="name"
               type="text"
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoComplete="name"
+              className="form-input"
+              placeholder="Votre nom"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+          <div className="form-group">
+            <label className="form-label" htmlFor="email">Email</label>
             <input
+              id="email"
               name="email"
               type="email"
               required
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoComplete="email"
+              className="form-input"
+              placeholder="vous@exemple.com"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
+          <div className="form-group">
+            <label className="form-label" htmlFor="password">Mot de passe</label>
             <input
+              id="password"
               name="password"
               type="password"
               minLength={8}
               required
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoComplete="new-password"
+              className="form-input"
+              placeholder="8 caractères minimum"
             />
           </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+          {error && <div className="form-error">{error}</div>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="btn btn-primary btn-full btn-lg"
+            style={{ marginTop: 4 }}
           >
             {loading ? 'Création...' : 'Créer mon compte'}
           </button>
         </form>
-        <p className="text-sm text-slate-600 mt-4 text-center">
+        <p className="auth-footer">
           Déjà un compte ?{' '}
-          <Link href="/login" className="text-blue-600 hover:underline">
-            Se connecter
-          </Link>
+          <Link href="/login">Se connecter</Link>
         </p>
       </div>
     </main>

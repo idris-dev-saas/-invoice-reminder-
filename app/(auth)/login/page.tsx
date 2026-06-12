@@ -28,42 +28,55 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">Connexion</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+    <main className="auth-page">
+      <div className="auth-lockup">
+        <div className="auth-logo">
+          <span className="app-logo-dot" />
+          Invoice Reminder
+        </div>
+        <p className="auth-tagline">Gérez vos relances sans effort</p>
+      </div>
+
+      <div className="auth-card">
+        <h1 className="auth-heading">Connexion</h1>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label className="form-label" htmlFor="email">Email</label>
             <input
+              id="email"
               name="email"
               type="email"
               required
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoComplete="email"
+              className="form-input"
+              placeholder="vous@exemple.com"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
+          <div className="form-group">
+            <label className="form-label" htmlFor="password">Mot de passe</label>
             <input
+              id="password"
               name="password"
               type="password"
               required
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoComplete="current-password"
+              className="form-input"
+              placeholder="••••••••"
             />
           </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+          {error && <div className="form-error">{error}</div>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="btn btn-primary btn-full btn-lg"
+            style={{ marginTop: 4 }}
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>
-        <p className="text-sm text-slate-600 mt-4 text-center">
+        <p className="auth-footer">
           Pas encore de compte ?{' '}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            S&apos;inscrire
-          </Link>
+          <Link href="/register">S&apos;inscrire</Link>
         </p>
       </div>
     </main>

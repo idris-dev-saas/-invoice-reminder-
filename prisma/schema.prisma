@@ -6,13 +6,30 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Plan {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  password  String
-  name      String?
-  createdAt DateTime  @default(now())
-  invoices  Invoice[]
+  id                   String              @id @default(cuid())
+  email                String              @unique
+  password             String
+  name                 String?
+  createdAt            DateTime            @default(now())
+  plan                 Plan                @default(FREE)
+  subscriptionStatus   SubscriptionStatus?
+  stripeCustomerId     String?             @unique
+  stripeSubscriptionId String?             @unique
+  invoices             Invoice[]
 }
 
 enum InvoiceStatus {
@@ -22,17 +39,22 @@ enum InvoiceStatus {
 }
 
 model Invoice {
-  id          String        @id @default(cuid())
-  userId      String
-  clientName  String
-  clientEmail String
-  amount      Float
-  currency    String        @default("EUR")
-  dueDate     DateTime
-  status      InvoiceStatus @default(UNPAID)
-  createdAt   DateTime      @default(now())
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reminders   ReminderLog[]
+  id            String        @id @default(cuid())
+  invoiceNumber Int?
+  userId        String
+  clientName    String
+  clientEmail   String
+  amount        Float
+  currency      String        @default("EUR")
+  dueDate       DateTime
+  status        InvoiceStatus @default(UNPAID)
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminders     ReminderLog[]
+
+  // Safety net — advisory lock is primary protection, this is the last line of defence
+  @@unique([userId, invoiceNumber])
 }
 
 model ReminderLog {
@@ -43,4 +65,20 @@ model ReminderLog {
   invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@unique([invoiceId, reminderType])
+}
+
+// Stripe event deduplication — prevents double-processing on retries
+model StripeEventLog {
+  id        String   @id  // Stripe event ID (evt_xxx)
+  type      String
+  processed DateTime @default(now())
+}
+
+// IP-based rate limiting without external Redis
+model RateLimitEntry {
+  id      String   @id  // "register:{ip}" | "login:{ip}"
+  count   Int      @default(1)
+  resetAt DateTime
+
+  @@index([resetAt])
 }

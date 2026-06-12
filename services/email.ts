@@ -1,8 +1,16 @@
 import { Resend } from 'resend'
+import type { ReminderType } from '@/lib/plan'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-type ReminderType = 'J3' | 'J7' | 'J14'
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
 
 interface InvoiceEmailData {
   clientName: string
@@ -36,10 +44,10 @@ function buildEmailHtml(data: InvoiceEmailData, type: ReminderType): string {
   return `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
       <h2 style="color:#1e293b;">Rappel de paiement</h2>
-      <p>Bonjour <strong>${data.clientName}</strong>,</p>
+      <p>Bonjour <strong>${escapeHtml(data.clientName)}</strong>,</p>
       <p>Nous vous contactons car la facture ci-dessous est restée impayée depuis ${daysOverdue} jours.</p>
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:24px 0;">
-        <p><strong>Référence :</strong> ${data.invoiceId}</p>
+        <p><strong>Référence :</strong> ${escapeHtml(data.invoiceId)}</p>
         <p><strong>Montant dû :</strong> ${formattedAmount}</p>
         <p><strong>Date d'échéance :</strong> ${formattedDate}</p>
       </div>
@@ -51,21 +59,46 @@ function buildEmailHtml(data: InvoiceEmailData, type: ReminderType): string {
   `
 }
 
+export async function sendWelcomeEmail(to: string, name?: string): Promise<void> {
+  try {
+    await resend.emails.send({
+      from:    process.env.RESEND_FROM ?? 'Invoice Reminder <noreply@yourdomain.com>',
+      to,
+      subject: 'Bienvenue sur Invoice Reminder',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+          <h2 style="color:#1e293b;">Bienvenue${name ? `, ${name}` : ''} !</h2>
+          <p>Votre compte Invoice Reminder est prêt.</p>
+          <p>Vous pouvez dès maintenant :</p>
+          <ul>
+            <li>Créer vos premières factures</li>
+            <li>Suivre leur statut en temps réel</li>
+            <li>Recevoir des relances automatiques pour vos impayés</li>
+          </ul>
+          <p>Le plan Gratuit vous permet de gérer jusqu'à 5 factures avec relance J+3 automatique.</p>
+          <p style="color:#64748b;font-size:14px;">L'équipe Invoice Reminder</p>
+        </div>
+      `,
+    })
+  } catch (err) {
+    console.error('Failed to send welcome email:', err)
+  }
+}
+
 export async function sendReminderEmail(
   data: InvoiceEmailData,
   type: ReminderType
 ): Promise<boolean> {
-  try {
-    await resend.emails.send({
-      from: 'Invoice Reminder <noreply@yourdomain.com>',
-      to: data.clientEmail,
-      replyTo: data.ownerEmail,
-      subject: subjectMap[type],
-      html: buildEmailHtml(data, type),
-    })
-    return true
-  } catch (error) {
+  const { error } = await resend.emails.send({
+    from: process.env.RESEND_FROM ?? 'Invoice Reminder <noreply@yourdomain.com>',
+    to: data.clientEmail,
+    replyTo: data.ownerEmail,
+    subject: subjectMap[type],
+    html: buildEmailHtml(data, type),
+  })
+  if (error) {
     console.error('Failed to send reminder email:', error)
     return false
   }
+  return true
 }
